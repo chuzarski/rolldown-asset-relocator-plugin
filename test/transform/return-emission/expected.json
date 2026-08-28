@@ -1,0 +1,9 @@
+{
+  "assets": [
+    "return-emission/asset.txt",
+    "return-emission/expected.js",
+    "return-emission/expected.json",
+    "return-emission/input.js"
+  ],
+  "symlinks": []
+}

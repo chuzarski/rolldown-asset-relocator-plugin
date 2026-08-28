@@ -1,0 +1,8 @@
+{
+  "assets": [
+    "esm-dirname/expected.js",
+    "esm-dirname/expected.json",
+    "esm-dirname/input.js"
+  ],
+  "symlinks": []
+}

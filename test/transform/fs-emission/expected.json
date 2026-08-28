@@ -1,0 +1,13 @@
+{
+  "assets": [
+    "asset2.txt",
+    "asset3.txt",
+    "fs-emission/asset1.txt",
+    "fs-emission/asset2.txt",
+    "fs-emission/asset3.txt",
+    "fs-emission/expected.js",
+    "fs-emission/expected.json",
+    "fs-emission/input.js"
+  ],
+  "symlinks": []
+}

@@ -1,0 +1,9 @@
+{
+  "assets": [
+    "oracledb/expected.js",
+    "oracledb/expected.json",
+    "oracledb/input.js",
+    "oracledb/oracledb.js"
+  ],
+  "symlinks": []
+}

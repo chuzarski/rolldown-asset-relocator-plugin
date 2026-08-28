@@ -37,7 +37,7 @@ module.exports = async function (pkgPath, assetState, assetBase, emitFile, debug
       assetState.assetSymlinks[assetBase + file.substr(pkgPath.length + 1)] = path.relative(baseDir, path.resolve(baseDir, symlink));
     }
     else {
-      assetState.assetMeta[file.substr(pkgPath.length)] = { path: file, permissions: stats.mode };
+      assetState.assetMeta[assetBase + file.substr(pkgPath.length + 1)] = { path: file, permissions: stats.mode };
       if (debugLog)
         console.log('Emitting ' + file + ' for shared library support in ' + pkgPath);
       emitFile(assetBase + file.substr(pkgPath.length + 1), source);

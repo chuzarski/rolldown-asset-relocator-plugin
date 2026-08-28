@@ -1,0 +1,8 @@
+{
+  "assets": [
+    "google-gax2/expected.js",
+    "google-gax2/expected.json",
+    "google-gax2/input.js"
+  ],
+  "symlinks": []
+}

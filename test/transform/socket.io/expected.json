@@ -1,0 +1,8 @@
+{
+  "assets": [
+    "socket.io/expected.js",
+    "socket.io/expected.json",
+    "socket.io/input.js"
+  ],
+  "symlinks": []
+}

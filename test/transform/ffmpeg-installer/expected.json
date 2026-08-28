@@ -1,0 +1,11 @@
+{
+  "assets": [
+    "ffmpeg-installer/expected.js",
+    "ffmpeg-installer/expected.json",
+    "ffmpeg-installer/ffmpeg.exe",
+    "ffmpeg-installer/ffmpeg.js",
+    "ffmpeg-installer/input.js",
+    "ffmpeg.exe"
+  ],
+  "symlinks": []
+}

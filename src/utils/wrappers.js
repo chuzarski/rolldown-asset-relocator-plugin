@@ -140,7 +140,7 @@ function handleWrappers (ast, scope, magicString) {
         wrapper.arguments[0].body.body[wrapper.arguments[0].body.body.length - 1].argument.callee.arguments[2].type === 'ArrayExpression') {
       const modules = wrapper.arguments[0].body.body[wrapper.arguments[0].body.body.length - 1].argument.callee.arguments[0].properties;
 
-      // replace the browserify wrapper require with __non_webpack_require__
+      // replace the browserify wrapper require with __rolldown_native_require__
       const innerFn = wrapper.arguments[0].body.body[wrapper.arguments[0].body.body.length - 1].argument.callee.callee.type === 'FunctionExpression' ? wrapper.arguments[0].body.body[wrapper.arguments[0].body.body.length - 1].argument.callee.callee : wrapper.arguments[0].body.body[wrapper.arguments[0].body.body.length - 1].argument.callee.callee.callee.body.body[0];
       let innerBody;
       if (innerFn.type === 'FunctionDeclaration')
@@ -153,8 +153,8 @@ function handleWrappers (ast, scope, magicString) {
         const requireCheck = innerBody.body[1].init.declarations[0].init;
         requireVar.right.name = '_';
         requireCheck.right.name = '_';
-        magicString.overwrite(requireVar.start, requireVar.end, '__non_webpack_require__');
-        magicString.overwrite(requireCheck.start, requireCheck.end, '__non_webpack_require__');
+        magicString.overwrite(requireVar.start, requireVar.end, '__rolldown_native_require__');
+        magicString.overwrite(requireCheck.start, requireCheck.end, '__rolldown_native_require__');
         transformed = true;
       }
       
@@ -188,7 +188,7 @@ function handleWrappers (ast, scope, magicString) {
         }
         return true;
       })) {
-        // if we have externals, inline them into the browserify cache for webpack to pick up
+        // if we have externals, inline them into the browserify cache for the bundler to pick up
         const externalIds = Object.keys(externals);
         if (externalIds.length) {
           const cache = (wrapper.arguments[0].body.body[1] || wrapper.arguments[0].body.body[0]).argument.callee.arguments[1];
