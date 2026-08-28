@@ -1,1 +1,0 @@
-require(dynamic || './input.js');

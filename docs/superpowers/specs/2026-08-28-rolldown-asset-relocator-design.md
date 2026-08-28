@@ -1,7 +1,7 @@
 # Rolldown Asset Relocator Plugin — Design
 
 Date: 2026-08-28
-Status: Approved (unattended execution authorized by the user)
+Status: Implemented, then superseded in part — see "Amendment" below.
 
 ## Goal
 
@@ -10,7 +10,8 @@ builds bundled with Rolldown — and with tsdown, which consumes Rolldown plugin
 directly — can relocate assets and native (`.node`) addons the same way `ncc`
 does under webpack.
 
-Non-goal: changing the existing webpack loader. It stays exactly as it is.
+Non-goal (at the time of writing): changing the existing webpack loader. That
+constraint was later dropped — see the amendment.
 
 ## Decisions
 
@@ -21,6 +22,8 @@ These were settled with the user before implementation:
    package is untouched — same `main`, same `files`, same publish flow, same
    `yarn.lock`. The two copies will diverge; that is the accepted cost of not
    destabilising a package that is already published and consumed.
+   *(Superseded: the webpack package was removed and the plugin promoted to the
+   repository root. There is only one copy again.)*
 2. **The plugin writes assets itself.** Emitted assets do not go through
    Rolldown's `emitFile`. The plugin copies them in `writeBundle`, applying the
    recorded file mode and recreating symlinks. Native addons therefore come out
@@ -32,6 +35,9 @@ These were settled with the user before implementation:
    prelude is chosen per chunk from the resolved output format.
 
 ## Layout
+
+*(As designed. The `packages/rolldown-plugin/` prefix is now the repository
+root — see the amendment.)*
 
 ```
 packages/rolldown-plugin/
@@ -225,3 +231,46 @@ only.
   The transform snapshots are insulated from it; the e2e tests are not, by design.
 - **`require.main` under ESM.** The translation is a best-effort approximation of
   a CJS-only construct.
+
+## Amendment — webpack removal and pnpm (2026-08-28, same day)
+
+After the port landed and was verified, the constraint that made decision 1
+necessary was dropped: the webpack loader is not being kept. That changes three
+things and nothing else.
+
+**The webpack package is gone.** `src/asset-relocator.js`, the loader's `src/utils/`,
+the whole webpack test suite (`test/index.test.js`, `test/project.test.js`,
+`test/esm-asset-base.test.js`, `test/project-chunking/`, `test/unit/`,
+`test/yarn-pnp/`) and the `webpack`, `webpack-cli`, `memory-fs`,
+`socket.io-client` and `@vercel/ncc` devDependencies were deleted. The published
+name is now `@vercel/rolldown-plugin-asset-relocator`.
+
+**The plugin is the repository.** With one package left, a workspace would be
+overhead, so `packages/rolldown-plugin/` was promoted to the root. Decision 1
+and its "two copies will diverge" cost no longer apply — there is one copy of
+the analysis engine and it is the plugin's.
+
+**pnpm replaces yarn.** `yarn.lock` and the plugin's `package-lock.json` are
+replaced by a single `pnpm-lock.yaml`; `packageManager` pins `pnpm@11.1.3`. CI
+collapses to one `test` job on the existing OS/Node matrix, installing with
+`pnpm/action-setup` and `pnpm install --frozen-lockfile`, and `release` runs
+`pnpm semantic-release`.
+
+### What deliberately kept a webpack-shaped name
+
+Three things read as webpack references but are not dependencies on it. They
+handle code that *arrives from* the ecosystem, so removing them would be a
+functional regression:
+
+- `analyze.js` still recognises a hand-written `__non_webpack_require__` in
+  dependency source and rewrites it to `__rolldown_native_require__`. Published
+  packages do ship that identifier.
+- `wrappers.js` still unwraps webpack-generated bundles found inside
+  dependencies, under `wrapperCompatibility`. That is about consuming webpack
+  *output* from npm.
+- `test/transform/require-check/` is the fixture covering the first of those.
+
+The `repository.url` in `package.json` also still points at
+`vercel/webpack-asset-relocator-loader`, because that is the repository's actual
+name on GitHub. Renaming the remote is the owner's call, not something to guess
+at in a commit.
