@@ -32,13 +32,22 @@ function optionsFor (name) {
 }
 
 // Fixture directories move between machines, so any absolute path that survives
-// into the output is rewritten to a stable token before comparison.
+// into the output is rewritten to a stable token before comparison. A Windows
+// path can reach the output in three shapes: as-is, slash-normalised, and
+// backslash-escaped, the last because the analysis emits paths through
+// JSON.stringify. Missing the escaped form leaks `D:\\a\\...` into the diff.
+function pathVariants (dir) {
+  return [
+    dir,
+    dir.replace(/\\/g, "/"),
+    dir.replace(/\\/g, "\\\\")
+  ];
+}
+
 function normalize (text, dir) {
-  return text
-    .split(dir).join("<fixture>")
-    .split(dir.replace(/\\/g, "/")).join("<fixture>")
-    .replace(/\r/g, "")
-    .trim();
+  for (const variant of pathVariants(dir))
+    text = text.split(variant).join("<fixture>");
+  return text.replace(/\r/g, "").trim();
 }
 
 const SKIP_FILES = new Set(["expected.js", "output.js", "output-coverage.js", "actual.js"]);
@@ -121,6 +130,10 @@ for (const name of fs.readdirSync(fixturesDir)) {
     }
 
     expect(fs.existsSync(expectedPath)).toBe(true);
+    // A leaked absolute path means normalize() has missed a spelling of the
+    // fixture directory; say so directly instead of via a confusing diff.
+    expect(actual).not.toContain(fixturesDir);
+    expect(actual).not.toContain(fixturesDir.replace(/\\/g, "/"));
     expect(actual).toBe(normalize(fs.readFileSync(expectedPath, "utf8"), dir));
     expect(actualMeta).toEqual(JSON.parse(fs.readFileSync(expectedMetaPath, "utf8")));
   });

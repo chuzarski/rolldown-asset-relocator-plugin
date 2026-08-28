@@ -83,6 +83,20 @@ describe.each(FORMATS)("$format output", ({ format, entryFileNames }) => {
     expect(run(built.entry)).toBe("entry");
   });
 
+  // `import.meta.url` resolves symlinks; `process.argv[1]` does not. A bundle
+  // launched through a symlinked path — the macOS tmpdir under /var, a symlinked
+  // deploy directory — must still recognise itself as the entry point.
+  (process.platform === "win32" ? it.skip : it)(
+    "keeps require.main true when launched through a symlinked path",
+    async () => {
+      const built = await build("require-main", { format, entryFileNames });
+      const link = built.dir + "-link";
+      fs.symlinkSync(built.dir, link);
+      tmpDirs.push(link);
+      expect(run(path.join(link, entryFileNames))).toBe("entry");
+    }
+  );
+
   it("emits every candidate of a wildcard path and reads the selected one", async () => {
     const built = await build("wildcard-assets", { format, entryFileNames });
     expect(fs.existsSync(path.join(built.dir, "assets", "data", "one.txt"))).toBe(true);

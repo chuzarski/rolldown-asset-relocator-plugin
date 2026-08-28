@@ -39,16 +39,23 @@ function buildPrelude ({ format, chunkFileName, outputAssetBase, needs }) {
   if (isEsm(format)) {
     if (needs.nativeRequire)
       lines.push(`import { createRequire as __rolldown_create_require__ } from "node:module";`);
-    if (needs.isMain)
-      lines.push(`import { pathToFileURL as __rolldown_path_to_file_url__ } from "node:url";`);
+    if (needs.isMain) {
+      lines.push(`import { realpathSync as __rolldown_realpath__ } from "node:fs";`);
+      lines.push(`import { fileURLToPath as __rolldown_file_url_to_path__ } from "node:url";`);
+    }
     if (needs.nativeRequire)
       lines.push(`const ${NATIVE_REQUIRE} = __rolldown_create_require__(import.meta.url);`);
     if (needs.assetBase)
       lines.push(`const ${ASSET_BASE} = ${ESM_DIRNAME} + ${JSON.stringify('/' + base)};`);
     if (needs.isMain)
+      // `import.meta.url` is always the resolved real path, while `process.argv[1]`
+      // is whatever the caller typed. Launch an ESM bundle through a symlink — the
+      // macOS tmpdir under /var, a symlinked deploy directory — and comparing them
+      // directly reports "not main". Resolve both sides before comparing.
       lines.push(
-        `const ${IS_MAIN} = !!process.argv[1] && ` +
-        `import.meta.url === __rolldown_path_to_file_url__(process.argv[1]).href;`
+        `const ${IS_MAIN} = (() => { try { return !!process.argv[1] && ` +
+        `__rolldown_realpath__(__rolldown_file_url_to_path__(import.meta.url)) === ` +
+        `__rolldown_realpath__(process.argv[1]); } catch { return false; } })();`
       );
   }
   else {
