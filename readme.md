@@ -8,7 +8,7 @@ libraries they link against.
 ## Installation
 
 ```bash
-pnpm add -D chuzarski/rolldown-asset-relocator-plugin
+pnpm add -D github:chuzarski/rolldown-asset-relocator-plugin
 ```
 
 ## Usage
