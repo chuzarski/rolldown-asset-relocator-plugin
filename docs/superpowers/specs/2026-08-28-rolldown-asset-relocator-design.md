@@ -243,7 +243,7 @@ the whole webpack test suite (`test/index.test.js`, `test/project.test.js`,
 `test/esm-asset-base.test.js`, `test/project-chunking/`, `test/unit/`,
 `test/yarn-pnp/`) and the `webpack`, `webpack-cli`, `memory-fs`,
 `socket.io-client` and `@vercel/ncc` devDependencies were deleted. The published
-name is now `@vercel/rolldown-plugin-asset-relocator`.
+name is now `rolldown-asset-relocator-plugin`, unscoped.
 
 **The plugin is the repository.** With one package left, a workspace would be
 overhead, so `packages/rolldown-plugin/` was promoted to the root. Decision 1
@@ -270,7 +270,9 @@ functional regression:
   *output* from npm.
 - `test/transform/require-check/` is the fixture covering the first of those.
 
-The `repository.url` in `package.json` also still points at
-`vercel/webpack-asset-relocator-loader`, because that is the repository's actual
-name on GitHub. Renaming the remote is the owner's call, not something to guess
-at in a commit.
+### New home
+
+Work continues in a fork at
+`github.com/chuzarski/rolldown-asset-relocator-plugin`, which is now the git
+`origin`. `vercel/webpack-asset-relocator-loader` is no longer a remote, and
+`repository.url` points at the fork.

@@ -8,7 +8,7 @@ libraries they link against.
 ## Installation
 
 ```bash
-pnpm add -D @vercel/rolldown-plugin-asset-relocator
+pnpm add -D rolldown-asset-relocator-plugin
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ pnpm add -D @vercel/rolldown-plugin-asset-relocator
 
 ```js
 import { defineConfig } from 'rolldown';
-import assetRelocator from '@vercel/rolldown-plugin-asset-relocator';
+import assetRelocator from 'rolldown-asset-relocator-plugin';
 
 export default defineConfig({
   input: 'src/index.js',
@@ -67,7 +67,7 @@ tsdown consumes Rolldown plugins directly, so there is nothing extra to wire up:
 
 ```js
 import { defineConfig } from 'tsdown';
-import assetRelocator from '@vercel/rolldown-plugin-asset-relocator';
+import assetRelocator from 'rolldown-asset-relocator-plugin';
 
 export default defineConfig({
   entry: ['src/index.js'],
