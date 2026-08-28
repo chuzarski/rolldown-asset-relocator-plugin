@@ -1,0 +1,6 @@
+{
+  "assets": [
+    "node.napi.node"
+  ],
+  "symlinks": []
+}

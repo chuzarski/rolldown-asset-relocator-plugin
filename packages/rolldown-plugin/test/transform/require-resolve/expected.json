@@ -1,0 +1,8 @@
+{
+  "assets": [
+    "asset1.txt",
+    "asset2.txt",
+    "asset3.txt"
+  ],
+  "symlinks": []
+}

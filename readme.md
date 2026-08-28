@@ -2,6 +2,10 @@
 
 Asset relocation loader used in ncc for performing Node.js builds while emitting and relocating any asset references.
 
+> Using [Rolldown](https://rolldown.rs) or [tsdown](https://tsdown.dev) instead
+> of webpack? See
+> [`packages/rolldown-plugin`](./packages/rolldown-plugin/readme.md).
+
 ## Usage
 
 ### Installation

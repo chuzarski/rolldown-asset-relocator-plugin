@@ -1,0 +1,10 @@
+{
+  "assets": [
+    "asset-fs-inline-assign/asset.txt",
+    "asset-fs-inline-assign/expected.js",
+    "asset-fs-inline-assign/expected.json",
+    "asset-fs-inline-assign/input.js",
+    "asset.txt"
+  ],
+  "symlinks": []
+}

@@ -38,17 +38,17 @@ packages/rolldown-plugin/
   package.json
   readme.md
   src/
-    index.js            plugin factory + Rolldown hooks
+    index.js            plugin factory, Rolldown hooks, the host implementation
     analyze.js          vendored analysis engine (from src/asset-relocator.js)
     runtime.js          prelude generation, runtime identifier names
-    host.js             the interface analyze.js talks to
     utils/              vendored: static-eval, wrappers, special-cases,
                         binary-locators, sharedlib-emit, dedupe-names,
                         get-package-base, get-package-scope, merge-source-maps
   test/
     transform.test.js   per-module snapshots
     e2e.test.js         bundle + run under node
-    transform/<name>/   input.js + expected.js
+    e2e-build.mjs       ESM child process that drives Rolldown/tsdown
+    transform/<name>/   sources + expected.js + expected.json
     e2e/<name>/
 ```
 
@@ -168,28 +168,47 @@ what was relocated.
 ## `require.main === module`
 
 The loader rewrites this to
-`__non_webpack_require__.main == __non_webpack_require__.cache[eval('__filename')]`.
-The CJS equivalent carries over directly with the renamed identifier. For ESM
-output the construct has no meaning; the plugin rewrites it to a comparison of
-`import.meta.url` against `process.argv[1]`, which is the closest faithful
-translation of "am I the entry point".
+`__non_webpack_require__.main == __non_webpack_require__.cache[eval('__filename')]`,
+which only means anything under CJS. Rather than carry two rewrites, the plugin
+replaces the whole comparison with a third runtime identifier,
+`__rolldown_is_main__`, and lets the prelude define it per format:
+
+- CJS: `__rolldown_native_require__.main === module` — in a Rolldown CJS chunk
+  `module` *is* the chunk's own module, so the check is exact and needs none of
+  webpack's `cache[eval('__filename')]` indirection.
+- ESM: `!!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href`.
+
+Non-entry modules still fold to `false`, as they do under the loader.
 
 ## Testing
 
-**Transform snapshots.** Every directory under `test/transform/` holds an
-`input.js` and an `expected.js`. The test drives `analyze()` directly against a
-stub host that records emissions, and compares the returned code. This is the
-same set of inputs the webpack fixtures use, but the expectation is the
-module-level rewrite only — no bundler codegen, so a Rolldown version bump cannot
-churn it. Emitted asset names are asserted alongside the code.
+**Transform snapshots.** Every directory under `test/transform/` is a copy of a
+webpack unit fixture with its webpack-specific `output.js` removed. The test
+drives `analyze()` directly against a stub host that records emissions, and
+compares the returned code against `expected.js`; emitted asset names and
+symlinks are asserted separately in `expected.json`. No bundler is involved, so
+a Rolldown version bump cannot churn these.
 
-**End-to-end.** A handful of fixtures under `test/e2e/` are bundled with Rolldown
-for real, in both `cjs` and `esm`, then executed with `node`. The test asserts a
-zero exit, expected stdout, that the asset files exist on disk, and that `.node`
-files came out with their executable bit. This is the layer that proves the
-runtime prelude, the asset writing, and the mode preservation actually work.
+Every JS file in a fixture is analyzed, not only `input.js` — several fixtures
+(`node-gyp-build-resolve`, the wrapper set, the `require-*` set) do their real
+work in a dependency, and analyzing only the entry would have left them
+asserting nothing. `expected.js` holds one `// ==> <relpath>` section per file.
+`UPDATE_FIXTURES=1 npm test` re-records them.
 
-Both suites run under the existing Jest setup, scoped to the package.
+**End-to-end.** Fixtures under `test/e2e/` are bundled for real, in both `cjs`
+and `esm`, then executed with `node`. The suite asserts stdout, that the asset
+files exist on disk, that `.node` files kept their executable bit, that symlinks
+came out as links, and that a nested chunk still resolves its asset base. One
+case builds through tsdown instead of Rolldown, which is the only guard needed
+there — tsdown takes Rolldown plugins as-is.
+
+Rolldown is ESM-only and Jest runs CJS, so each build is driven from
+`test/e2e-build.mjs` in a child process; it writes what the plugin recorded to
+`__build.json` for the test to read back. Options that cannot survive JSON
+(`customEmit`, `exclude`) are named presets in that script.
+
+The package installs with npm and has its own lockfile. It is deliberately not a
+yarn workspace of the root, per decision 1.
 
 ## CI
 
